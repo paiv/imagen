@@ -17,6 +17,10 @@ class Random {
 
 extension Random {
     
+    func fact() -> Bool {
+        return Bool.random(using: &state)
+    }
+    
     func inRange(_ range: ClosedRange<Int>) -> Int {
         return Int.random(in: range, using: &state)
     }

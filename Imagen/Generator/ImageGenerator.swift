@@ -73,7 +73,7 @@ private func asyncGenerateBatch(_ pendingWork: Int, parentProgress: Progress, se
         var jpegOn = settings.jpegOn
         var pngOn = settings.pngOn
         if jpegOn && pngOn {
-            if random.next() % 2 == 0 {
+            if random.fact() {
                 jpegOn = false
             }
             else {
