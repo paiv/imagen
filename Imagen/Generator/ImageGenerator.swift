@@ -85,30 +85,44 @@ private func asyncGenerateBatch(_ pendingWork: Int, parentProgress: Progress, se
         }
 
         let imageSize = random.sizeInRange(width: settings.imageWidth, height: settings.imageHeight, ratio: settings.sizeRatio)
+        
+        let completion = CompletionHandler() {
+            child.completedUnitCount = 1
+            asyncGenerateBatch(pendingWork - 1, parentProgress: parentProgress, settings: settings, random: random)
+        }
 
         autoreleasepool {
             let processor = ImageProcessor()
             if let image = processor.randomImageOfSize(imageSize, random: random) {
                 if jpegOn, let data = image.jpegData(compressionQuality: CGFloat(settings.jpegQuality)) {
-                    writeToSavedPhotosAlbumImageData(data)
+                    writeToSavedPhotosAlbumImageData(data, completion: completion)
                 }
                 else if pngOn, let data = image.pngData() {
-                    writeToSavedPhotosAlbumImageData(data)
+                    writeToSavedPhotosAlbumImageData(data, completion: completion)
                 }
             }
         }
-        
-        child.completedUnitCount = 1
-        asyncGenerateBatch(pendingWork - 1, parentProgress: parentProgress, settings: settings, random: random)
     }
 }
 
 
+private func writeToSavedPhotosAlbumImageData(_ data: Data, completion: CompletionHandler) {
+    guard let image = UIImage(data: data)
+    else { return }
+    UIImageWriteToSavedPhotosAlbum(image, completion, #selector(CompletionHandler.image(_:didFinishSavingWithError:contextInfo:)), nil)
 }
 
 
-private func writeToSavedPhotosAlbumImageData(_ data: Data) {
-    guard let image = UIImage(data: data)
-    else { return }
-    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+private class CompletionHandler : NSObject {
+    
+    init(callback: @escaping () -> Void) {
+        self.callback = callback
+        super.init()
+    }
+    
+    let callback: () -> Void
+    
+    @objc func image(_ image:UIImage, didFinishSavingWithError error:Error?, contextInfo:Any) {
+        callback()
+    }
 }
