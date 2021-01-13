@@ -32,7 +32,6 @@ class GeneratorViewModel {
     }
     
     init() {
-        generator.imageFormats.update(with: .png)
         repeatedUpdateSizeEstimation()
     }
 

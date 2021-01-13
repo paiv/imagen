@@ -36,12 +36,24 @@ extension Random {
     func happyColor() -> UIColor {
         return UIColor.randomBright(using: &state)
     }
+    
+    func sizeInRange(width: ClosedRange<Int>, height: ClosedRange<Int>, ratio: ClosedRange<Float>) -> CGSize {
+        var w = inRange(width)
+        var h = inRange(height)
+        if w > h {
+            h = max(h, Int(Float(w) * ratio.lowerBound))
+        }
+        else {
+            w = max(w, Int(Float(h) * ratio.lowerBound))
+        }
+        return CGSize(width: w, height: h)
+    }
 
     func rectInSize(_ size: CGSize) -> CGRect {
-        let x = inRange(0..<Int(size.width))
-        let y = inRange(0..<Int(size.height))
-        let width = inRange(0..<Int(size.width - CGFloat(x)))
-        let height = inRange(0..<Int(size.height - CGFloat(y)))
+        let width = inRange(1...Int(size.width / 2))
+        let height = inRange(1...Int(size.height / 2))
+        let x = inRange(0...(Int(size.width) - width))
+        let y = inRange(0...(Int(size.height) - height))
         return CGRect(x: x, y: y, width: width, height: height)
     }
 }

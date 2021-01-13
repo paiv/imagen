@@ -9,10 +9,11 @@ class ImageGenerator {
         static let jpeg = ImageFormats(rawValue: 1 << 1)
     }
     
-    var imageFormats: ImageFormats = [.png]
+    var imageFormats: ImageFormats = [.jpeg]
     var jpegQuality: Float = 0.65
     var imageWidth: ClosedRange<Int> = 100...2160
     var imageHeight: ClosedRange<Int> = 100...2160
+    var imageSizeRatio: ClosedRange<Float> = 0.75...1
     
     private(set) var progress: Progress?
     
@@ -25,6 +26,7 @@ class ImageGenerator {
         let settings = BatchSettings(
             imageWidth: imageWidth,
             imageHeight: imageHeight,
+            sizeRatio: imageSizeRatio,
             pngOn: imageFormats.contains(.png),
             jpegOn: imageFormats.contains(.jpeg),
             jpegQuality: jpegQuality)
@@ -57,6 +59,7 @@ extension ImageGenerator {
 private struct BatchSettings {
     let imageWidth: ClosedRange<Int>
     let imageHeight: ClosedRange<Int>
+    let sizeRatio: ClosedRange<Float>
     let pngOn: Bool
     let jpegOn: Bool
     let jpegQuality: Float
@@ -81,7 +84,7 @@ private func asyncGenerateBatch(_ pendingWork: Int, parentProgress: Progress, se
             }
         }
 
-        let imageSize = randomSizeInRange(width: settings.imageWidth, height: settings.imageHeight, random: random)
+        let imageSize = random.sizeInRange(width: settings.imageWidth, height: settings.imageHeight, ratio: settings.sizeRatio)
 
         autoreleasepool {
             let processor = ImageProcessor()
@@ -101,17 +104,6 @@ private func asyncGenerateBatch(_ pendingWork: Int, parentProgress: Progress, se
 }
 
 
-private func randomSizeInRange(width: ClosedRange<Int>, height: ClosedRange<Int>, random: Random) -> CGSize {
-    let ratio: Float = 3 / 4
-    var w = random.inRange(width)
-    var h = random.inRange(height)
-    if w > h {
-        h = max(h, Int(Float(w) * ratio))
-    }
-    else {
-        w = max(w, Int(Float(h) * ratio))
-    }
-    return CGSize(width: w, height: h)
 }
 
 
